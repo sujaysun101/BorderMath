@@ -35,7 +35,7 @@ The app uses Firebase Auth (Google sign-in), Firestore, and Firebase Storage for
 - Live compliance checks as itinerary changes
 
 ### 3) Compliance engine
-- Schengen rolling-window tracking (90 days in any 180-day period, with an 88-day safety threshold)
+- Schengen rolling-window tracking (90 days in any 180-day period, with alerts at 88 days to provide a 2-day safety buffer)
 - Country stay overage checks based on stay limits
 - Passport validity checks against trip dates and alert threshold
 - Consolidated compliance status banner and notes
@@ -74,7 +74,7 @@ cp .env.example .env.local
 ```
 
 Minimum expected values:
-- `GEMINI_API_KEY` (optional for current features; only needed if you add Gemini-powered functionality)
+- `GEMINI_API_KEY` (optional for current features; you can leave it empty unless you add Gemini-powered functionality)
 - `APP_URL` (used for hosted/deployment contexts)
 
 ### 3. Firebase configuration
