@@ -74,7 +74,7 @@ cp .env.example .env.local
 ```
 
 Minimum expected values:
-- `GEMINI_API_KEY` (read by Vite config; set it to avoid undefined environment values in local/dev builds)
+- `GEMINI_API_KEY` (optional for current features; only needed if you add Gemini-powered functionality)
 - `APP_URL` (used for hosted/deployment contexts)
 
 ### 3. Firebase configuration
