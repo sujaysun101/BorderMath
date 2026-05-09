@@ -1,0 +1,92 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user citizenship, residency, and passport details.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "citizenships": { "type": "array", "items": { "type": "string" }, "description": "List of citizenships (ISO country codes)" },
+        "residencies": { "type": "array", "items": { "type": "string" }, "description": "List of current residencies" },
+        "passportNumber": { "type": "string", "description": "Passport number" },
+        "passportExpiry": { "type": "string", "format": "date", "description": "Passport expiration date" },
+        "passportAlertThresholdMonths": { "type": "integer", "default": 9, "description": "Months before expiry to start alerting" }
+      },
+      "required": ["uid", "citizenships"]
+    },
+    "Trip": {
+      "title": "Trip",
+      "description": "Represents a planned or past itinerary.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string", "description": "Name of the trip" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "itinerary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "countryCode": { "type": "string" },
+              "entryDate": { "type": "string", "format": "date" },
+              "exitDate": { "type": "string", "format": "date" },
+              "transportType": { "type": "string", "enum": ["air", "land", "sea"] },
+              "visaRequirement": { "type": "string", "enum": ["visa-free", "visa-on-arrival", "e-visa", "visa-required"] },
+              "stayLimitDays": { "type": "integer" }
+            }
+          }
+        },
+        "isCompliant": { "type": "boolean" },
+        "complianceNotes": { "type": "string" }
+      },
+      "required": ["uid", "name", "itinerary"]
+    },
+    "Visa": {
+      "title": "Visa",
+      "description": "Stores active long-term visas or e-visas.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner UID" },
+        "countryCode": { "type": "string" },
+        "visaType": { "type": "string" },
+        "expiryDate": { "type": "string", "format": "date" },
+        "documentUrl": { "type": "string", "description": "URL to the stored PDF" }
+      },
+      "required": ["uid", "countryCode", "visaType", "expiryDate"]
+    },
+    "VisaApplication": {
+      "title": "Visa Application",
+      "description": "Tracks the status of ongoing visa applications.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "countryCode": { "type": "string" },
+        "visaType": { "type": "string" },
+        "applicationDate": { "type": "string", "format": "date" },
+        "expectedDecisionDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "withdrawn"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["uid", "countryCode", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile data"
+    },
+    "/trips/{tripId}": {
+      "schema": "Trip",
+      "description": "User trip itineraries"
+    },
+    "/visas/{visaId}": {
+      "schema": "Visa",
+      "description": "User visa documents"
+    },
+    "/visaApplications/{appId}": {
+      "schema": "VisaApplication",
+      "description": "Visa application tracking"
+    }
+  }
+}
