@@ -79,7 +79,7 @@ Minimum expected values:
 
 ### 3. Firebase configuration
 The app reads Firebase settings from:
-- `/home/runner/work/BorderMath/BorderMath/firebase-applet-config.json`
+- `./firebase-applet-config.json`
 
 If you are not using the included AI Studio Firebase project, replace this file with your own Firebase app config (Auth + Firestore + Storage enabled).
 
