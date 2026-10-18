@@ -25,12 +25,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const clerkReady = process.env.NODE_ENV !== "production" || Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const app = <Providers>{children}</Providers>;
   return (
     <html lang="en" className={`${outfit.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
-        <ClerkProvider>
-          <Providers>{children}</Providers>
-        </ClerkProvider>
+        {clerkReady ? <ClerkProvider>{app}</ClerkProvider> : app}
       </body>
     </html>
   );

@@ -51,7 +51,7 @@ export function buildSampleBrief(trip: Trip | null, alerts: Alert[]): Brief {
     sample: true,
     headline: "Sample brief — no model key is configured",
     summary: trip
-      ? `${trip.name} was scored locally from the Schengen engine and the sourced stay rules. This prose is a template, not a model response. Set ANTHROPIC_API_KEY to replace it.`
+      ? `${trip.name} is paired with the account-level day counts from the Schengen engine and the sourced stay rules. This prose is a template, not a model response. Set ANTHROPIC_API_KEY to replace it.`
       : "No trip was selected. This is a labeled sample so the screen still demonstrates the brief.",
     risks,
     pivots: PIVOTS.slice(0, 4),

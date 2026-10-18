@@ -29,7 +29,7 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-Clerk runs in keyless mode when the publishable and secret keys are unset. App routes are protected with `clerkMiddleware`.
+`npm run dev` uses Clerk keyless mode when the publishable and secret keys are unset. App routes are protected with `clerkMiddleware`. A production server without those keys still serves the marketing site, and `/demo` only when `DEMO_SCREENSHOT=1`. Set the Clerk keys before a production deploy that should accept sign-in.
 
 ```bash
 npm test
