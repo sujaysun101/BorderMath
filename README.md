@@ -1,131 +1,88 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # BorderMath
 
-BorderMath is a **global mobility and visa compliance planner** for travelers, digital nomads, and remote workers managing stays across multiple countries.
+Never overstay: visa-day math for nomads.
 
-It helps users:
-- Build and reorder multi-country itineraries
-- Track Schengen 90/180 compliance (with a built-in safety buffer)
-- Monitor country-specific stay limits and overstay risk
-- Check passport validity against travel legs
-- Store passport/visa records in a document vault
-- Track visa applications and expiry alerts
-- Estimate visa costs and compare trip-level totals
-- View mock regulation updates relevant to citizenship(s)
+BorderMath plans a year of border crossings, counts Schengen days with the real 90-in-any-180 rule, and flags stays that run past sourced limits for the UK, the United States, Canada, Japan, Thailand, Mexico, and the UAE.
 
-The app uses Firebase Auth (Google sign-in), Firestore, and Firebase Storage for user/profile/document data.
+## Features
 
----
+- Rolling Schengen window. Entry day and exit day both count. Overlapping stays count once. A 2-day safety buffer warns above 88 days without treating 89 or 90 as an overstay.
+- Trips saved per account with Clerk. Postgres via `DATABASE_URL` (Neon or Supabase). If that variable is missing, the app uses an in-memory store and labels it **Demo data**.
+- Visa rules live in `data/visa-rules.json` with a source URL and a last-verified date. The file is the dataset, not a live embassy feed.
+- Exchange rates from [Frankfurter](https://www.frankfurter.app/) (European Central Bank, no API key), cached for six hours.
+- Overstay, full-stay, passport-validity, and visa-required alerts.
+- `.ics` export for a trip, including a Schengen cap event when that trip itself breaks 90/180.
+- Timeline of the year and charts of the rolling window.
+- Server-side mobility brief. Model calls never run in the browser. With no `ANTHROPIC_API_KEY`, the brief is a labeled sample built from the same day counts.
 
-## What the application includes
+## Stack
 
-### 1) Landing + authentication
-- Public landing page describing BorderMath capabilities
-- Google sign-in via Firebase Authentication
-- Auth-aware routing into the main planner
+Next.js 15 App Router, TypeScript, Tailwind CSS v4, shadcn-style UI, lucide, framer-motion, Clerk, Drizzle ORM, Postgres, Recharts, Zod.
 
-### 2) Itinerary planner (Explorer tab)
-- Add destination legs with entry/exit dates
-- Drag-and-drop leg ordering
-- Country picker with Schengen vs non-Schengen labeling
-- Per-leg visa requirement type and estimated fee (mock data service)
-- Live compliance checks as itinerary changes
+## Local setup
 
-### 3) Compliance engine
-- Schengen rolling-window tracking (90 days in any 180-day period, with alerts at 88 days to provide a 2-day safety buffer)
-- Country stay overage checks based on stay limits
-- Passport validity checks against trip dates and alert threshold
-- Consolidated compliance status banner and notes
-
-### 4) Document Vault (Vault tab)
-- Passport details and customizable alert threshold
-- Passport PDF upload to Firebase Storage
-- Visa document records with optional file upload
-- Visa application tracking (pending/approved/rejected/withdrawn)
-- Expiry warnings and quick renewal search links
-- CSV export for passport/visa/application data
-
-### 5) Tools tab
-- Currency converter (mock exchange rates)
-- Visa cost analysis by itinerary leg + total estimate
-- Schengen usage history chart
-- Insurance recommendation cards
-
----
-
-## Local development
-
-### Prerequisites
-- Node.js 18+
-- npm
-
-### 1. Install dependencies
 ```bash
 npm install
-```
-
-### 2. Configure environment variables
-Copy the sample file and set values:
-```bash
 cp .env.example .env.local
-```
-
-Minimum expected values:
-- `GEMINI_API_KEY` (optional for current features; you can leave it empty unless you add Gemini-powered functionality)
-- `APP_URL` (used for hosted/deployment contexts)
-
-### 3. Firebase configuration
-The app reads Firebase settings from:
-- `./firebase-applet-config.json` (relative to the project root)
-
-If you are not using the included AI Studio Firebase project, replace this file with your own Firebase app config (Auth + Firestore + Storage enabled).
-
-### 4. Start the app
-```bash
 npm run dev
 ```
-Then open `http://localhost:3000`.
 
----
+Open `http://localhost:3000`.
 
-## How to use BorderMath
-
-1. **Sign in with Google** from the landing page.
-2. In **Explorer**:
-   - Click **Add Country** to add itinerary legs.
-   - Set country + entry/exit dates for each leg.
-   - Reorder legs via drag and drop.
-   - Watch compliance status update in real time.
-3. Review **compliance notes** for Schengen/country/passport risks.
-4. Open **Vault** to:
-   - Add/edit passport info and alert threshold.
-   - Upload passport copy.
-   - Add visa documents and visa applications.
-   - Export structured data as CSV.
-5. Open **Tools** to:
-   - Convert currencies.
-   - Review per-leg visa fee estimates.
-   - Visualize Schengen usage trend history.
-
----
-
-## Scripts
+`npm run dev` uses Clerk keyless mode when the publishable and secret keys are unset. App routes are protected with `clerkMiddleware`. A production server without those keys still serves the marketing site, and `/demo` only when `DEMO_SCREENSHOT=1`. Set the Clerk keys before a production deploy that should accept sign-in.
 
 ```bash
-npm run dev     # Run local dev server on port 3000
-npm run lint    # TypeScript type-check (no emit)
-npm run build   # Production build
-npm run preview # Preview production build
-npm run clean   # Remove dist output
+npm test
+npm run typecheck
+npm run lint
+npm run build
 ```
 
----
+### Database
 
-## Notes
+```bash
+# DATABASE_URL must be set
+npm run db:migrate
+SEED_USER_ID=user_xxx npm run db:seed
+```
 
-- Some data providers are currently mocked in this codebase (e.g., visa requirements, regulation updates, exchange rates).
-- Core travel calculations and alerts are computed client-side from your itinerary/profile/documents.
-- Uploaded documents and user records are stored in Firebase services configured for the project.
+`npm run db:seed` inserts the demo nomad year only when that user has no trips. Without `DATABASE_URL`, memory mode already serves the same year and the seed script writes nothing.
+
+### Screenshots
+
+```bash
+DEMO_SCREENSHOT=1 npm run start
+# in another shell, against that server
+SCREENSHOT_URL=http://127.0.0.1:3000 npm run screenshot
+```
+
+`DEMO_SCREENSHOT=1` opens `/demo` without auth so a portfolio shot can show the logged-in workspace. Leave it unset in production. The route is 404 otherwise.
+
+## Environment variables
+
+| Name | Required | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | No in dev | Clerk. Keyless mode when empty. |
+| `CLERK_SECRET_KEY` | No in dev | Clerk secret. Server only. |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | No | Defaults in `.env.example`. |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | No | |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No | |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | No | |
+| `DATABASE_URL` | No | Postgres. Memory demo store when empty. |
+| `ANTHROPIC_API_KEY` | No | Server-side briefs. Sample brief when empty. |
+| `AI_MODEL` | No | Defaults to `claude-sonnet-4-5`. |
+| `UPSTASH_REDIS_REST_URL` | No | Shared rate limit for briefs. |
+| `UPSTASH_REDIS_REST_TOKEN` | No | |
+| `DEMO_SCREENSHOT` | No | Set to `1` only while shooting `/demo`. |
+| `SEED_USER_ID` | No | Clerk user id for the seed script. |
+| `APP_URL` | No | Absolute URL for metadata. |
+
+Do not put model keys in `NEXT_PUBLIC_*` or a Vite `define` block. AI requests are signed-in, Zod-checked, rate-limited, and capped at 800 output tokens.
+
+## What is real, and what is a sample
+
+Real: the 90/180 engine, the JSON rule file, Frankfurter rates, alerts, calendar export, Clerk sessions, and Postgres when configured.
+
+Sample: the mobility brief when `ANTHROPIC_API_KEY` is unset, and the whole workspace when `DATABASE_URL` is unset (labeled Demo data). The seeded year belongs to a fictional traveler, Maya Chen, so the product has something to click through.
+
+Rules are summaries for planning. They are not an admission decision.
